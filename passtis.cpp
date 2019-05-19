@@ -13,12 +13,12 @@ Passtis::Passtis(int argc, char* argv[])
         return;
     }
 
-    signal (SIGWINCH, NULL);
-
     initscr();
     raw();
     noecho();
     keypad(stdscr, TRUE);
+
+    signal(SIGWINCH, NULL);
 
     _database = new Database();
 
