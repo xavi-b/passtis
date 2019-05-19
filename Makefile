@@ -1,22 +1,25 @@
-CC=gcc
+CC=g++
 CFLAGS=-Wall -O
-LDFLAGS=
-EXEC=mon_executable
-SRC=$(wildcard *.c)
-OBJ=$(SRC:.c=.o)
+LDFLAGS=\
+-lyaml-cpp \
+-lcrypto \
+-lncurses \
+-lform
+EXEC=passtis
+SRC=$(wildcard *.cpp) $(wildcard windows/*.cpp)
+HEADERS=$(wildcard *.h) $(wildcard windows/*.h)
+OBJ=$(SRC:.cpp=.o)
 
 all: $(EXEC)
 
-pastees:    $(OBJ)
-            $(CC) -o $@ $^ $(LDFLAGS)
+passtis: $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-main.o: pastees.h
-
-%.o:        %.c
-            $(CC) -o $@ -c $< $(CFLAGS)
+%.o: %.cpp $(HEADERS)
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
-    rm -f *.o core
+	rm -f *.o windows/*.o core
 
 mrproper: clean
-    rm -f $(EXEC)
+	rm -f $(EXEC)
