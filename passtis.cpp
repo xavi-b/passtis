@@ -1,16 +1,37 @@
 #include "passtis.h"
 
-Passtis::Passtis(int argc, char* argv[])
+Passtis::Passtis()
   : _initialized(false),
     _database(nullptr),
     _currentWindow(nullptr)
+{
+
+}
+
+Passtis::~Passtis()
+{
+    endwin();
+}
+
+Passtis* Passtis::Instance()
+{
+    static Passtis instance;
+    return &instance;
+}
+
+void Passtis::OnResizeEvent(int sig)
+{
+    Instance()->_currentWindow->onResizeEvent();
+}
+
+bool Passtis::init(int argc, char* argv[])
 {
     std::cout << "PASSTIS" << std::endl;
 
     if(argc <= 1)
     {
         std::cerr << "Filename argument is missing !" << std::endl;
-        return;
+        return false;
     }
 
     initscr();
@@ -18,7 +39,7 @@ Passtis::Passtis(int argc, char* argv[])
     noecho();
     keypad(stdscr, TRUE);
 
-    signal(SIGWINCH, NULL);
+    signal(SIGWINCH, &Passtis::OnResizeEvent);
 
     _database = new Database();
 
@@ -34,11 +55,8 @@ Passtis::Passtis(int argc, char* argv[])
     _currentWindow = _unlockWindow.get();
 
     _initialized = true;
-}
 
-Passtis::~Passtis()
-{
-    endwin();
+    return true;
 }
 
 int Passtis::exec()
@@ -57,6 +75,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _displayWindow.get();
             _displayWindow->setDatabase(_database);
+            _displayWindow->update();
         }
 
         if(wa.type == WindowAction::GoToNewWindow)
@@ -65,6 +84,7 @@ int Passtis::exec()
             _currentWindow = _newWindow.get();
             _newWindow->setDatabase(_database);
             _newWindow->setRoute(wa.route);
+            _newWindow->update();
         }
 
         if(wa.type == WindowAction::GoToEditWindow)
@@ -73,6 +93,7 @@ int Passtis::exec()
             _currentWindow = _editWindow.get();
             _editWindow->setDatabase(_database);
             _editWindow->setRoute(wa.route);
+            _editWindow->update();
         }
 
         if(wa.type == WindowAction::GoToRemoveWindow)
@@ -81,6 +102,7 @@ int Passtis::exec()
             _currentWindow = _removeWindow.get();
             _removeWindow->setDatabase(_database);
             _removeWindow->setRoute(wa.route);
+            _removeWindow->update();
         }
 
         if(wa.type == WindowAction::GoToQuitWindow)
@@ -88,12 +110,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _quitWindow.get();
             _quitWindow->setDatabase(_database);
-        }
-
-        if(wa.type == WindowAction::Resize)
-        {
-            // TODO
-            break;
+            _quitWindow->update();
         }
 
         if(wa.type == WindowAction::Quit)
@@ -105,4 +122,14 @@ int Passtis::exec()
     }
 
     return 0;
+}
+
+bool Passtis::Init(int argc, char* argv[])
+{
+    return Instance()->init(argc, argv);
+}
+
+int Passtis::Exec()
+{
+    return Instance()->exec();
 }

@@ -15,12 +15,18 @@ struct WindowAction
         GoToEditWindow,
         GoToRemoveWindow,
         GoToQuitWindow,
-        Resize,
         Quit
     };
 
     Type type;
     std::string route;
+
+    WindowAction()
+      : type(Type::Nothing),
+        route("")
+    {
+
+    }
 };
 
 class Window
@@ -33,8 +39,11 @@ public:
 
     void setDatabase(Database* database);
 
+    virtual void onResizeEvent();
     virtual WindowAction onKeyEvent(int ch);
     //virtual onMouseEvent() = 0;
+
+    virtual void update();
 };
 
 #endif // WINDOW_H

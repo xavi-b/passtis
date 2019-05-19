@@ -2,6 +2,6 @@
 
 int main(int argc, char* argv[])
 {
-    Passtis passtis(argc, argv);
-    return passtis.exec();
+    Passtis::Init(argc, argv);
+    return Passtis::Exec();
 }

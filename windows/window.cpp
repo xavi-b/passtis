@@ -11,16 +11,19 @@ void Window::setDatabase(Database* database)
     _database = database;
 }
 
+void Window::onResizeEvent()
+{
+    clear();
+    refresh();
+    mvprintw(0, 0, "resize");
+
+    update();
+}
+
 WindowAction Window::onKeyEvent(int ch)
 {
     WindowAction wa;
     wa.type = WindowAction::Nothing;
-
-    if(ch == KEY_RESIZE)
-    {
-        wa.type = WindowAction::Resize;
-        return wa;
-    }
 
     if(std::string(keyname(ch)) == "^C")
     {
@@ -29,4 +32,9 @@ WindowAction Window::onKeyEvent(int ch)
     }
 
     return wa;
+}
+
+void Window::update()
+{
+    refresh();
 }

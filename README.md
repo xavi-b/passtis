@@ -4,6 +4,5 @@
 
 #ISSUES
 
-resize signal handling
 
 #LATER

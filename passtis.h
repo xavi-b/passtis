@@ -29,11 +29,19 @@ private:
     std::unique_ptr<RemoveWindow>   _removeWindow;
     std::unique_ptr<QuitWindow>     _quitWindow;
 
+    static Passtis* Instance();
+
 public:
-    Passtis(int argc, char* argv[]);
+    Passtis();
     ~Passtis();
 
+    static void OnResizeEvent(int sig);
+
+    bool init(int argc, char* argv[]);
     int exec();
+
+    static bool Init(int argc, char* argv[]);
+    static int Exec();
 };
 
 #endif // PASTEES_H
