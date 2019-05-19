@@ -29,6 +29,11 @@ struct WindowAction
     }
 };
 
+enum WindowColor
+{
+    Title = 1
+};
+
 class Window
 {
 protected:

@@ -3,7 +3,7 @@
 Window::Window()
   : _database(nullptr)
 {
-
+    init_pair(WindowColor::Title, COLOR_BLACK, COLOR_WHITE);
 }
 
 void Window::setDatabase(Database* database)
@@ -13,9 +13,8 @@ void Window::setDatabase(Database* database)
 
 void Window::onResizeEvent()
 {
-    clear();
+    endwin(); // causes Ctrl+C to be doubled to quit but can't resize without it ?
     refresh();
-    mvprintw(0, 0, "resize");
 
     update();
 }

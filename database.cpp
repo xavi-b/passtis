@@ -1,8 +1,8 @@
 #include "database.h"
 
-Database::Database()
+Database::Database(const std::string& filename)
   : _opened(false),
-    _oldFilename("")
+    _oldFilename(filename)
 {
 
 }
@@ -24,11 +24,9 @@ std::string Database::filename() const
     return _oldFilename;
 }
 
-bool Database::open(const std::string& filename)
+bool Database::open()
 {
-	_oldFilename = filename;
-
-    std::ifstream filestream(filename);
+    std::ifstream filestream(_oldFilename);
 
     std::stringstream yamlStream;
     yamlStream << filestream.rdbuf();

@@ -22,11 +22,11 @@ private:
     std::vector<std::string> split(const std::string& str, char delimiter);
 
 public:
-    Database();
+    Database(const std::string& filename);
 
     std::string filename() const;
 
-    bool open(const std::string& filename);
+    bool open();
 
     bool isOpened() const;
 

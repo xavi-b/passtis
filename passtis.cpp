@@ -38,13 +38,15 @@ bool Passtis::init(int argc, char* argv[])
     raw();
     noecho();
     keypad(stdscr, TRUE);
+    start_color();
 
     signal(SIGWINCH, &Passtis::OnResizeEvent);
 
-    _database = new Database();
+    _database = new Database(argv[1]);
 
     _unlockWindow = std::make_unique<UnlockWindow>();
     _unlockWindow->setDatabase(_database);
+    _unlockWindow->update();
 
     _displayWindow = std::make_unique<DisplayWindow>();
     _newWindow = std::make_unique<NewWindow>();

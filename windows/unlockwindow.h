@@ -8,13 +8,20 @@
 class UnlockWindow : public Window
 {
 private:
-    FIELD *field[3];
-    FORM  *my_form;
+    WINDOW* _ncTitleWin;
+    FIELD* _ncFields[2];
+    FORM* _ncForm;
+
+protected:
+    virtual void clean();
 
 public:
     UnlockWindow();
+    ~UnlockWindow();
 
     virtual WindowAction onKeyEvent(int ch);
+
+    virtual void update();
 };
 
 #endif // UNLOCKWINDOW_H
