@@ -26,13 +26,15 @@ public:
 
     std::string filename() const;
 
-    bool open();
+    bool open(const std::string& password);
 
     bool isOpened() const;
 
     bool nodeTo();
 
-    YAML::Node groupNode(const std::string& route);
+    YAML::Node nodeContent(const std::string& route = "");
+    YAML::Node subNode(YAML::Node& node, std::vector<std::string>& groups);
+
     void operator[](const std::string& route);
     void addKeyNode(const std::string& route, const Key& key);
     void addKeyNode(
@@ -43,8 +45,6 @@ public:
         const std::string& more
         );
     void removeNode(const std::string& route);
-
-    YAML::Node nodeContent(const std::string& route);
 
     bool save();
     bool save(const std::string& filename);

@@ -77,6 +77,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _displayWindow.get();
             _displayWindow->setDatabase(_database);
+            _displayWindow->setRoute(wa.data);
             _displayWindow->update();
         }
 
@@ -85,7 +86,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _newWindow.get();
             _newWindow->setDatabase(_database);
-            _newWindow->setRoute(wa.route);
+            _newWindow->setRoute(wa.data);
             _newWindow->update();
         }
 
@@ -94,7 +95,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _editWindow.get();
             _editWindow->setDatabase(_database);
-            _editWindow->setRoute(wa.route);
+            _editWindow->setRoute(wa.data);
             _editWindow->update();
         }
 
@@ -103,7 +104,7 @@ int Passtis::exec()
             clear();
             _currentWindow = _removeWindow.get();
             _removeWindow->setDatabase(_database);
-            _removeWindow->setRoute(wa.route);
+            _removeWindow->setRoute(wa.data);
             _removeWindow->update();
         }
 

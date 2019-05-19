@@ -9,14 +9,15 @@ Database::Database(const std::string& filename)
 
 std::vector<std::string> Database::split(const std::string& str, char delimiter)
 {
-   std::vector<std::string> tokens;
-   std::string token;
-   std::istringstream tokenStream(str);
-   while (std::getline(tokenStream, token, delimiter))
-   {
-      tokens.push_back(token);
-   }
-   return tokens;
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (std::getline(tokenStream, token, delimiter))
+    {
+        if(token != "")
+            tokens.push_back(token);
+    }
+    return tokens;
 }
 
 std::string Database::filename() const
@@ -24,7 +25,7 @@ std::string Database::filename() const
     return _oldFilename;
 }
 
-bool Database::open()
+bool Database::open(const std::string& password)
 {
     std::ifstream filestream(_oldFilename);
 
@@ -34,6 +35,7 @@ bool Database::open()
     // TODO decode
 
     // TODO opened = true / false
+    _opened = true;
 
     _rootNode =  YAML::Load(yamlStream.str());
 
@@ -45,24 +47,52 @@ bool Database::isOpened() const
     return _opened;
 }
 
-YAML::Node Database::groupNode(const std::string& route)
+YAML::Node Database::nodeContent(const std::string& route)
 {
 	std::vector<std::string> groups = split(route, '/');
 
 	YAML::Node node = _rootNode;
-	for(auto group : groups)
-	{
-		YAML::Node childNode(YAML::NodeType::Sequence);
-
-		node = (node[group] = childNode);
-	}
+	if(groups.size() > 0)
+        return subNode(node, groups);
 
 	return node;
 }
 
+YAML::Node Database::subNode(YAML::Node& node, std::vector<std::string>& groups)
+{
+    if(groups.size() > 0)
+    {
+        bool found = false;
+        YAML::Node childNode;
+
+        for(size_t i = 0; i < node["children"].size(); i++)
+        {
+            if(node["children"][i]["name"].as<std::string>() == groups[0])
+            {
+                childNode = node["children"][i];
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+        {
+            childNode["name"] = groups[0];
+            node["children"].push_back(childNode);
+        }
+
+        groups.erase(groups.begin());
+        return subNode(childNode, groups);
+    }
+    else
+    {
+        return node;
+    }
+}
+
 void Database::operator[](const std::string& route)
 {
-	groupNode(route);
+	nodeContent(route);
 }
 
 void Database::addKeyNode(const std::string& route, const Key& key)
@@ -78,7 +108,7 @@ void Database::addKeyNode(
     const std::string& more
     )
 {
-	YAML::Node node = groupNode(route);
+	YAML::Node node = nodeContent(route);
 
 	node[name]["identity"] = identity;
 	node[name]["password"] = password;

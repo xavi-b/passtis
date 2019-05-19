@@ -2,7 +2,7 @@
 
 RouteAwareWindow::RouteAwareWindow()
   : Window(),
-    _route("")
+    _route("/")
 {
 
 }

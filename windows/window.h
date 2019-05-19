@@ -19,11 +19,11 @@ struct WindowAction
     };
 
     Type type;
-    std::string route;
+    std::string data;
 
     WindowAction()
       : type(Type::Nothing),
-        route("")
+        data("")
     {
 
     }

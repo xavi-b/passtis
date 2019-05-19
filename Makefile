@@ -1,9 +1,10 @@
 CC=g++
-CFLAGS=-Wall -O
+CFLAGS=-Wall -O -g
 LDFLAGS=\
 -lyaml-cpp \
 -lcrypto \
 -lncurses \
+-lmenu \
 -lform
 EXEC=passtis
 SRC=$(wildcard *.cpp) $(wildcard windows/*.cpp)
