@@ -18,8 +18,13 @@ WindowAction Window::onKeyEvent(int ch)
 
     if(ch == KEY_RESIZE)
     {
-        std::cout << "Resize" << std::endl;
         wa.type = WindowAction::Resize;
+        return wa;
+    }
+
+    if(std::string(keyname(ch)) == "^C")
+    {
+        wa.type = WindowAction::Quit;
         return wa;
     }
 
