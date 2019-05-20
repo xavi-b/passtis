@@ -3,6 +3,9 @@
 
 #include <fstream>
 #include <yaml-cpp/yaml.h>
+#include <openssl/md5.h>
+
+#include "encryptor.h"
 
 struct Key
 {
@@ -18,11 +21,13 @@ private:
     bool _opened;
     std::string _oldFilename;
     YAML::Node _rootNode;
+    Encryptor* _encryptor;
 
     std::vector<std::string> split(const std::string& str, char delimiter);
 
 public:
     Database(const std::string& filename);
+    ~Database();
 
     std::string filename() const;
 

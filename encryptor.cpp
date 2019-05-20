@@ -10,7 +10,7 @@ Encryptor::Encryptor(const std::string& key, const std::string& iv)
 
     if(_ctx)
     {
-        std::cerr << "Failure during Encryptor initialization !" << std::endl;
+        _error = "Failure during Encryptor initialization !";
         _initialized = true;
     }
 }
@@ -21,17 +21,21 @@ Encryptor::~Encryptor()
         EVP_CIPHER_CTX_free(_ctx);
 }
 
-bool Encryptor::error()
+std::string Encryptor::error()
 {
-    ERR_print_errors_fp(stderr);
-    return false;
+    return _error;
+}
+
+bool Encryptor::isInitialized() const
+{
+    return _initialized;
 }
 
 bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
 {
-    if(!_initialized)
+    if(!isInitialized())
     {
-        std::cerr << "Encryptor not initialized !" << std::endl;
+        _error = "Encryptor not initialized !";
         return false;
     }
 
@@ -57,7 +61,10 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     /*
      * Provide the message to be encrypted, and obtain the encrypted output.
@@ -72,7 +79,10 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     /*
      * Finalise the encryption. Further ciphertext bytes may be written at
@@ -85,7 +95,10 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     encryptedstr.resize(len + finalLen);
 
@@ -94,7 +107,7 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
 
 bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
 {
-    if(!_initialized)
+    if(!isInitialized())
     {
         std::cerr << "Encryptor not initialized !" << std::endl;
         return false;
@@ -122,7 +135,10 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     /*
      * Provide the message to be decrypted, and obtain the plaintext output.
@@ -137,7 +153,10 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     /*
      * Finalise the decryption. Further plaintext bytes may be written at
@@ -150,7 +169,10 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
         );
 
     if(!ret)
-        return error();
+    {
+        _error = ERR_error_string(ERR_get_error(), nullptr);
+        return false;
+    }
 
     decryptedstr.resize(len + finalLen);
 

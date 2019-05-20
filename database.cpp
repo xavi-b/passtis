@@ -2,9 +2,16 @@
 
 Database::Database(const std::string& filename)
   : _opened(false),
-    _oldFilename(filename)
+    _oldFilename(filename),
+    _encryptor(nullptr)
 {
 
+}
+
+Database::~Database()
+{
+    if(_encryptor)
+        delete _encryptor;
 }
 
 std::vector<std::string> Database::split(const std::string& str, char delimiter)
@@ -32,12 +39,26 @@ bool Database::open(const std::string& password)
     std::stringstream yamlStream;
     yamlStream << filestream.rdbuf();
 
-    // TODO decode
+    char* key = (char*) MD5((const unsigned char*)password.c_str(), password.size(), NULL);
+    std::string iv = password;
+    iv.resize(16, '0');
+    _encryptor = new Encryptor(key, iv);
 
-    // TODO opened = true / false
-    _opened = true;
+    if(!_encryptor->isInitialized())
+        return false;
 
-    _rootNode =  YAML::Load(yamlStream.str());
+    std::string decryptedstr;
+    if(!_encryptor->decrypt(yamlStream.str(), decryptedstr))
+    {
+        _opened = false;
+        delete _encryptor;
+        _encryptor = nullptr;
+    }
+    else
+    {
+        _opened = true;
+        _rootNode =  YAML::Load(decryptedstr);
+    }
 
     return isOpened();
 }
@@ -136,13 +157,19 @@ bool Database::save()
 
 bool Database::save(const std::string& filename)
 {
-	std::stringstream yamlStream;
+    if(!isOpened())
+        return false;
+
+    std::stringstream yamlStream;
 	yamlStream << _rootNode;
 
-    // TODO encode
+    std::string encryptedstr;
 
-	std::ofstream fout(filename);
-	fout << yamlStream.str();
+    if(!_encryptor->encrypt(yamlStream.str(), encryptedstr))
+        return false;
+
+    std::ofstream fout(filename);
+	fout << encryptedstr;
 
     return true;
 }
