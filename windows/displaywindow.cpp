@@ -5,7 +5,9 @@ DisplayWindow::DisplayWindow()
     _ncTitleWin(nullptr),
     _ncMenuWin(nullptr),
     _ncSubMenuWin(nullptr),
-    _ncMenu(nullptr)
+    _ncPanelWin(nullptr),
+    _ncMenu(nullptr),
+    _toggle(false)
 {
 
 }
@@ -17,6 +19,7 @@ DisplayWindow::~DisplayWindow()
 
 void DisplayWindow::clean()
 {
+    _toggle = false;
     delwin(_ncTitleWin);
     unpost_menu(_ncMenu);
     free_menu(_ncMenu);
@@ -27,8 +30,79 @@ void DisplayWindow::clean()
     }
     delwin(_ncMenuWin);
     delwin(_ncSubMenuWin);
+    delwin(_ncPanelWin);
 }
 
+void DisplayWindow::selectionChanged()
+{
+    _toggle = false;
+
+    updatePanel();
+
+    wrefresh(_ncMenuWin);
+}
+
+void DisplayWindow::enterPressed()
+{
+    ITEM* item = current_item(_ncMenu);
+    if(item != nullptr)
+    {
+        if(_database->nodeContent(_route)["children"][item_index(item)]["children"].IsDefined())
+        {
+            _toggle = false;
+            setRoute(_route + item_name(item) + '/');
+            update();
+        }
+        else
+        {
+            _toggle = !_toggle;
+            updatePanel();
+        }
+    }
+}
+
+void DisplayWindow::updatePanel()
+{
+    wclear(_ncPanelWin);
+    ITEM* item = current_item(_ncMenu);
+    if(item != nullptr)
+    {
+        if(!_database->nodeContent(_route)["children"][item_index(item)]["children"].IsDefined())
+        {
+            std::string name = _database->nodeContent(_route)["children"][item_index(item)]["name"].as<std::string>();
+            wattron(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 0, 0, "NAME:");
+            wattroff(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 1, 0, name.c_str());
+
+            std::string identity = _database->nodeContent(_route)["children"][item_index(item)]["identity"].as<std::string>();
+            wattron(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 2, 0, "IDENTITY:");
+            wattroff(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 3, 0, identity.c_str());
+
+            wattron(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 4, 0, "PASSWORD:");
+            wattroff(_ncPanelWin, A_BOLD);
+            if(_toggle)
+            {
+                std::string password = _database->nodeContent(_route)["children"][item_index(item)]["password"].as<std::string>();
+                mvwprintw(_ncPanelWin, 5, 0, password.c_str());
+            }
+            else
+            {
+                mvwprintw(_ncPanelWin, 5, 0, "********");
+            }
+
+            std::string more = _database->nodeContent(_route)["children"][item_index(item)]["more"].as<std::string>();
+            wattron(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 6, 0, "MORE:");
+            wattroff(_ncPanelWin, A_BOLD);
+            mvwprintw(_ncPanelWin, 7, 0, more.c_str());
+        }
+    }
+    wrefresh(_ncPanelWin);
+}
 WindowAction DisplayWindow::onKeyEvent(int ch)
 {
     WindowAction wa;
@@ -37,21 +111,21 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
     {
         case KEY_DOWN:
             menu_driver(_ncMenu, REQ_DOWN_ITEM);
-            wrefresh(_ncMenuWin);
+            selectionChanged();
             break;
         case KEY_UP:
             menu_driver(_ncMenu, REQ_UP_ITEM);
-            wrefresh(_ncMenuWin);
+            selectionChanged();
             break;
         // TODO KEYPAGEDOWN
         case KEY_NPAGE:
             menu_driver(_ncMenu, REQ_SCR_DPAGE);
-            wrefresh(_ncMenuWin);
+            selectionChanged();
             break;
         // TODO KEYPAGEUP
         case KEY_PPAGE:
             menu_driver(_ncMenu, REQ_SCR_UPAGE);
-            wrefresh(_ncMenuWin);
+            selectionChanged();
             break;
         case 127: // backspace
             if(_route != "/")
@@ -62,19 +136,28 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
             }
             break;
         case 10: // enter
-            ITEM* item = current_item(_ncMenu);
-            if(item != nullptr)
-            {
-                if(_database->nodeContent(_route)["children"][item_index(item)]["children"].IsDefined())
-                {
-                    setRoute(_route + item_name(item) + '/');
-                    update();
-                }
-                else
-                {
-                    // TODO key
-                }
-            }
+            enterPressed();
+            break;
+        case KEY_F(1):
+            wa.type = WindowAction::GoToNewWindow;
+            wa.data = _route;
+            return wa;
+            break;
+        case KEY_F(2):
+            wa.type = WindowAction::GoToEditWindow;
+            wa.data = _route;
+            return wa;
+            break;
+        // TODO
+        /*case KEY_F(3):
+            wa.type = WindowAction::GoToMoveWindow;
+            wa.data = _route;
+            return wa;
+            break;*/
+        case KEY_F(4):
+            wa.type = WindowAction::GoToRemoveWindow;
+            wa.data = _route;
+            return wa;
             break;
     }
     return Window::onKeyEvent(ch);
@@ -86,6 +169,17 @@ void DisplayWindow::update()
 
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
+
+    int panelWidth = 50;
+
+    int nbShortcuts = 4;
+    mvprintw(rows-4, 0, "F1: new");
+    mvprintw(rows-3, 0, "F2: edit");
+    mvprintw(rows-2, 0, "F3: move");
+    mvprintw(rows-1, 0, "F4: remove");
+    mvprintw(rows-4, cols/2, "Enter: go down / toggle");
+    mvprintw(rows-3, cols/2, "Backspace: go back up");
+    mvprintw(rows-2, cols/2, "Ctrl+C: exit");
 
     YAML::Node currentNode = _database->nodeContent(_route);
 
@@ -110,16 +204,19 @@ void DisplayWindow::update()
 
     _ncMenu = new_menu(&_ncMenuItems[0]);
 
-    _ncMenuWin = newwin(rows-3, cols, 1, 0);
-    _ncSubMenuWin = derwin(_ncMenuWin, rows-3, cols, 0, 0);
+    _ncMenuWin = newwin(rows-2-nbShortcuts, cols-panelWidth, 1, 0);
+    _ncSubMenuWin = derwin(_ncMenuWin, rows-2-nbShortcuts, cols-panelWidth, 0, 0);
 
     set_menu_win(_ncMenu, _ncMenuWin);
     set_menu_sub(_ncMenu, _ncSubMenuWin);
     set_menu_mark(_ncMenu, "> ");
     post_menu(_ncMenu);
 
-    mvprintw(rows-1, 0, "Ctrl+C to Exit");
     refresh();
+
+    _ncPanelWin = newwin(rows-2-nbShortcuts, panelWidth, 1, cols-panelWidth);
+
+    updatePanel();
 
     if(_database)
     {
@@ -133,6 +230,7 @@ void DisplayWindow::update()
     }
 
     wrefresh(_ncMenuWin);
+    wrefresh(_ncPanelWin);
 
     Window::update();
 }
