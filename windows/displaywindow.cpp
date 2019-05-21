@@ -47,7 +47,8 @@ void DisplayWindow::enterPressed()
     ITEM* item = current_item(_ncMenu);
     if(item != nullptr)
     {
-        if(_database->nodeContent(_route)["children"][item_index(item)]["children"].IsDefined())
+        int index = std::stoi(item_description(item));
+        if(_database->nodeContent(_route)["children"][index]["children"].IsDefined())
         {
             _toggle = false;
             setRoute(_route + item_name(item) + '/');
@@ -67,15 +68,16 @@ void DisplayWindow::updatePanel()
     ITEM* item = current_item(_ncMenu);
     if(item != nullptr)
     {
-        if(!_database->nodeContent(_route)["children"][item_index(item)]["children"].IsDefined())
+        int index = std::stoi(item_description(item));
+        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
         {
-            std::string name = _database->nodeContent(_route)["children"][item_index(item)]["name"].as<std::string>();
+            std::string name = _database->nodeContent(_route)["children"][index]["name"].as<std::string>();
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 0, 0, "NAME:");
             wattroff(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 1, 0, name.c_str());
 
-            std::string identity = _database->nodeContent(_route)["children"][item_index(item)]["identity"].as<std::string>();
+            std::string identity = _database->nodeContent(_route)["children"][index]["identity"].as<std::string>();
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 2, 0, "IDENTITY:");
             wattroff(_ncPanelWin, A_BOLD);
@@ -86,7 +88,7 @@ void DisplayWindow::updatePanel()
             wattroff(_ncPanelWin, A_BOLD);
             if(_toggle)
             {
-                std::string password = _database->nodeContent(_route)["children"][item_index(item)]["password"].as<std::string>();
+                std::string password = _database->nodeContent(_route)["children"][index]["password"].as<std::string>();
                 mvwprintw(_ncPanelWin, 5, 0, password.c_str());
             }
             else
@@ -94,7 +96,7 @@ void DisplayWindow::updatePanel()
                 mvwprintw(_ncPanelWin, 5, 0, "********");
             }
 
-            std::string more = _database->nodeContent(_route)["children"][item_index(item)]["more"].as<std::string>();
+            std::string more = _database->nodeContent(_route)["children"][index]["more"].as<std::string>();
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 6, 0, "MORE:");
             wattroff(_ncPanelWin, A_BOLD);
@@ -188,14 +190,39 @@ void DisplayWindow::update()
     for(size_t i = 0; i < currentNode["children"].size(); i++)
     {
         if(currentNode["children"][i]["name"].IsDefined())
-            _menuItems.push_back(currentNode["children"][i]["name"].as<std::string>());
+        {
+            MenuItem menuitem;
+            menuitem.name = currentNode["children"][i]["name"].as<std::string>();
+            menuitem.isGroup = currentNode["children"][i]["children"].IsDefined();
+            menuitem.pos = std::to_string(i);
+
+            _menuItems.push_back(menuitem);
+        }
     }
+
+    std::sort(_menuItems.begin(), _menuItems.end(), [] (auto a, auto b) {
+        if(a.isGroup && !b.isGroup)
+            return true;
+
+        if(!a.isGroup && b.isGroup)
+            return false;
+
+        std::vector<std::string> names;
+        names.push_back(a.name);
+        names.push_back(b.name);
+        auto oldBegin = names.begin();
+        std::sort(names.begin(), names.end());
+        if(oldBegin == names.begin())
+            return false;
+
+        return true;
+    });
 
     for(size_t i = 0; i < _menuItems.size(); i++)
     {
         ITEM* item = new_item(
-            _menuItems[i].c_str(),
-            ""
+            _menuItems[i].name.c_str(),
+            _menuItems[i].pos.c_str()
             );
         _ncMenuItems.push_back(item);
     }
@@ -210,6 +237,7 @@ void DisplayWindow::update()
     set_menu_win(_ncMenu, _ncMenuWin);
     set_menu_sub(_ncMenu, _ncSubMenuWin);
     set_menu_mark(_ncMenu, "> ");
+    menu_opts_off(_ncMenu, O_SHOWDESC);
     post_menu(_ncMenu);
 
     refresh();
