@@ -34,6 +34,9 @@ std::string Database::filename() const
 
 bool Database::open(const std::string& password)
 {
+    if(isOpened())
+        return false;
+
     std::ifstream filestream(_oldFilename);
 
     std::stringstream yamlStream;
@@ -42,6 +45,10 @@ bool Database::open(const std::string& password)
     char* key = (char*) MD5((const unsigned char*)password.c_str(), password.size(), NULL);
     std::string iv = password;
     iv.resize(16, '0');
+
+    if(_encryptor)
+        delete _encryptor;
+
     _encryptor = new Encryptor(key, iv);
 
     if(!_encryptor->isInitialized())
