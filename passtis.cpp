@@ -10,6 +10,8 @@ Passtis::Passtis()
 
 Passtis::~Passtis()
 {
+    if(_database)
+        delete _database;
     endwin();
 }
 
