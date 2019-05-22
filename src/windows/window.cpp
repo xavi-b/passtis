@@ -13,6 +13,7 @@ void Window::setDatabase(Database* database)
 
 void Window::onResizeEvent()
 {
+    clear();
     endwin(); // causes Ctrl+C to be doubled to quit but can't resize without it ?
     refresh();
 

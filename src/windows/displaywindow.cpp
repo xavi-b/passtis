@@ -207,8 +207,6 @@ void DisplayWindow::update()
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
 
-    int panelWidth = 50;
-
     int nbShortcuts = 4;
     mvprintw(rows-4, 0, "F1: new");
     mvprintw(rows-3, 0, "F2: edit");
@@ -268,8 +266,8 @@ void DisplayWindow::update()
 
     _ncMenu = new_menu(&_ncMenuItems[0]);
 
-    _ncMenuWin = newwin(rows-2-nbShortcuts, cols-panelWidth, 1, 0);
-    _ncSubMenuWin = derwin(_ncMenuWin, rows-2-nbShortcuts, cols-panelWidth, 0, 0);
+    _ncMenuWin = newwin(rows-2-nbShortcuts, cols/2, 1, 0);
+    _ncSubMenuWin = derwin(_ncMenuWin, rows-2-nbShortcuts, cols/2, 0, 0);
 
     set_menu_win(_ncMenu, _ncMenuWin);
     set_menu_sub(_ncMenu, _ncSubMenuWin);
@@ -279,7 +277,7 @@ void DisplayWindow::update()
 
     refresh();
 
-    _ncPanelWin = newwin(rows-2-nbShortcuts, panelWidth, 1, cols-panelWidth);
+    _ncPanelWin = newwin(rows-2-nbShortcuts, cols/2, 1, cols/2);
 
     updatePanel();
 
