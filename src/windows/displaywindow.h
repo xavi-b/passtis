@@ -4,6 +4,8 @@
 #include <menu.h>
 #include <algorithm>
 
+#include "clip/clip.h"
+
 #include "routeawarewindow.h"
 
 class DisplayWindow : public RouteAwareWindow
@@ -31,6 +33,9 @@ protected:
     void enterPressed();
     void selectionChanged();
     void updatePanel();
+
+    void copyIdentityToClipboard();
+    void copyPasswordToClipboard();
 
 public:
     DisplayWindow();

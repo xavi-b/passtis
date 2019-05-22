@@ -105,6 +105,35 @@ void DisplayWindow::updatePanel()
     }
     wrefresh(_ncPanelWin);
 }
+
+void DisplayWindow::copyIdentityToClipboard()
+{
+    ITEM* item = current_item(_ncMenu);
+    if(item != nullptr)
+    {
+        int index = std::stoi(item_description(item));
+        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        {
+            std::string identity = _database->nodeContent(_route)["children"][index]["identity"].as<std::string>();
+            clip::set_text(identity);
+        }
+    }
+}
+
+void DisplayWindow::copyPasswordToClipboard()
+{
+    ITEM* item = current_item(_ncMenu);
+    if(item != nullptr)
+    {
+        int index = std::stoi(item_description(item));
+        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        {
+            std::string password = _database->nodeContent(_route)["children"][index]["password"].as<std::string>();
+            clip::set_text(password);
+        }
+    }
+}
+
 WindowAction DisplayWindow::onKeyEvent(int ch)
 {
     WindowAction wa;
@@ -161,6 +190,12 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
             wa.data = _route;
             return wa;
             break;
+        case KEY_F(5):
+            copyIdentityToClipboard();
+            break;
+        case KEY_F(6):
+            copyPasswordToClipboard();
+            break;
     }
     return Window::onKeyEvent(ch);
 }
@@ -179,9 +214,11 @@ void DisplayWindow::update()
     mvprintw(rows-3, 0, "F2: edit");
     mvprintw(rows-2, 0, "F3: move");
     mvprintw(rows-1, 0, "F4: remove");
-    mvprintw(rows-4, cols/2, "Enter: go down / toggle");
-    mvprintw(rows-3, cols/2, "Backspace: go back up");
-    mvprintw(rows-2, cols/2, "Ctrl+C: exit");
+    mvprintw(rows-4, cols/3, "F5: copy identity");
+    mvprintw(rows-3, cols/3, "F6: copy password");
+    mvprintw(rows-4, 2*cols/3, "Enter: go down / toggle");
+    mvprintw(rows-3, 2*cols/3, "Backspace: go back up");
+    mvprintw(rows-2, 2*cols/3, "Ctrl+C: exit");
 
     YAML::Node currentNode = _database->nodeContent(_route);
 
