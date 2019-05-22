@@ -29,9 +29,9 @@ WindowAction UnlockWindow::tryUnlock()
 {
     WindowAction wa;
 
-    form_driver(_ncForm, REQ_NEXT_FIELD);
-    form_driver(_ncForm, REQ_END_LINE);
+    form_driver(_ncForm, REQ_VALIDATION);
     std::string password = field_buffer(_ncFields[0], 0);
+    password.resize(password.find_first_of(' '));
 
     if(_database->open(password))
     {
@@ -94,8 +94,9 @@ void UnlockWindow::update()
     field_opts_off(_ncFields[0], O_AUTOSKIP);
     field_opts_off(_ncFields[0], O_PUBLIC);
     field_opts_on(_ncFields[0], O_EDIT);
+    set_field_type(_ncFields[0], TYPE_ALNUM, 1); // TODO issue
 
-    _ncForm = new_form(_ncFields);
+    _ncForm = new_form(&_ncFields[0]);
     post_form(_ncForm);
     refresh();
 
@@ -122,8 +123,4 @@ void UnlockWindow::update()
 
     mvprintw(2, (cols-labelLength-fieldLength)/2, "Password:");
     move(2, fieldPos);
-
-    refresh();
-
-    Window::update();
 }

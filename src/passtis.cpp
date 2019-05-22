@@ -120,11 +120,9 @@ int Passtis::exec()
 
         if(wa.type == WindowAction::Quit)
         {
-            _database->save("out"); // TODO
+            _database->save(); // TODO
             break;
         }
-
-        refresh();
     }
 
     return 0;

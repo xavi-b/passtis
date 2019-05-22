@@ -2,10 +2,11 @@
 
 .lock system
 
-clipboard library
+["children"].IsDefined() --> Database::isGroup(const YAML::Node& node);
 
 #ISSUES
 
+node sort is wrong
 
 #LATER
 

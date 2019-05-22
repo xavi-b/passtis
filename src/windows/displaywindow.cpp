@@ -294,6 +294,5 @@ void DisplayWindow::update()
 
     wrefresh(_ncMenuWin);
     wrefresh(_ncPanelWin);
-
-    Window::update();
+    move(1, 0);
 }

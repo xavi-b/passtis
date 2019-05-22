@@ -54,8 +54,11 @@ bool Database::open(const std::string& password)
     if(!_encryptor->isInitialized())
         return false;
 
+    struct stat buffer;
+    bool fileExists = (stat(_oldFilename.c_str(), &buffer) == 0);
+
     std::string decryptedstr;
-    if(!_encryptor->decrypt(yamlStream.str(), decryptedstr))
+    if(fileExists && !_encryptor->decrypt(yamlStream.str(), decryptedstr))
     {
         _opened = false;
         delete _encryptor;
@@ -106,6 +109,7 @@ YAML::Node Database::subNode(YAML::Node& node, std::vector<std::string>& groups)
         if(!found)
         {
             childNode["name"] = groups[0];
+            childNode["children"] = YAML::Node(YAML::NodeType::Sequence);
             node["children"].push_back(childNode);
         }
 
@@ -138,9 +142,13 @@ void Database::addKeyNode(
 {
 	YAML::Node node = nodeContent(route);
 
-	node[name]["identity"] = identity;
-	node[name]["password"] = password;
-	node[name]["more"] = more;
+    YAML::Node key;
+    key["name"] = name;
+	key["identity"] = identity;
+	key["password"] = password;
+	key["more"] = more;
+
+    node["children"].push_back(key);
 }
 
 void Database::removeNode(const std::string& route)

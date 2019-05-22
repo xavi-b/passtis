@@ -10,7 +10,7 @@ class UnlockWindow : public Window
 private:
     WINDOW* _ncTitleWin;
     WINDOW* _ncMsgWin;
-    FIELD* _ncFields[2];
+    std::array<FIELD*, 2> _ncFields;
     FORM* _ncForm;
     std::string _message;
 

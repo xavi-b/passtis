@@ -4,6 +4,7 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include <openssl/md5.h>
+#include <sys/stat.h>
 
 #include "encryptor.h"
 
