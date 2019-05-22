@@ -7,8 +7,8 @@ LDFLAGS=\
 -lmenu \
 -lform
 EXEC=passtis
-SRC=$(wildcard *.cpp) $(wildcard windows/*.cpp)
-HEADERS=$(wildcard *.h) $(wildcard windows/*.h)
+SRC=$(wildcard src/*.cpp) $(wildcard src/windows/*.cpp)
+HEADERS=$(wildcard src/*.h) $(wildcard src/windows/*.h)
 OBJ=$(SRC:.cpp=.o)
 
 all: $(EXEC)
@@ -20,7 +20,7 @@ passtis: $(OBJ)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
-	rm -f *.o windows/*.o core
+	rm -f src/*.o src/windows/*.o core
 
 mrproper: clean
 	rm -f $(EXEC)

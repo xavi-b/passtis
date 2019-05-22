@@ -4,8 +4,6 @@
 
 clipboard library
 
-order node by name
-
 #ISSUES
 
 
