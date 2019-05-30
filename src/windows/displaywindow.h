@@ -37,6 +37,8 @@ protected:
     void copyIdentityToClipboard();
     void copyPasswordToClipboard();
 
+    std::string selectedRoute();
+
 public:
     DisplayWindow();
     ~DisplayWindow();

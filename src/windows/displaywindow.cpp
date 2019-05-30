@@ -48,7 +48,7 @@ void DisplayWindow::enterPressed()
     if(item != nullptr)
     {
         int index = std::stoi(item_description(item));
-        if(_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        if(_database->nodeContent(_route).children[index].isGroup())
         {
             _toggle = false;
             setRoute(_route + item_name(item) + '/');
@@ -69,15 +69,15 @@ void DisplayWindow::updatePanel()
     if(item != nullptr)
     {
         int index = std::stoi(item_description(item));
-        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        if(!_database->nodeContent(_route).children[index].isGroup())
         {
-            std::string name = _database->nodeContent(_route)["children"][index]["name"].as<std::string>();
+            std::string name = _database->nodeContent(_route).children[index].name;
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 0, 0, "NAME:");
             wattroff(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 1, 0, name.c_str());
 
-            std::string identity = _database->nodeContent(_route)["children"][index]["identity"].as<std::string>();
+            std::string identity = _database->nodeContent(_route).children[index].identity;
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 2, 0, "IDENTITY:");
             wattroff(_ncPanelWin, A_BOLD);
@@ -88,7 +88,7 @@ void DisplayWindow::updatePanel()
             wattroff(_ncPanelWin, A_BOLD);
             if(_toggle)
             {
-                std::string password = _database->nodeContent(_route)["children"][index]["password"].as<std::string>();
+                std::string password = _database->nodeContent(_route).children[index].password;
                 mvwprintw(_ncPanelWin, 5, 0, password.c_str());
             }
             else
@@ -96,7 +96,7 @@ void DisplayWindow::updatePanel()
                 mvwprintw(_ncPanelWin, 5, 0, "********");
             }
 
-            std::string more = _database->nodeContent(_route)["children"][index]["more"].as<std::string>();
+            std::string more = _database->nodeContent(_route).children[index].more;
             wattron(_ncPanelWin, A_BOLD);
             mvwprintw(_ncPanelWin, 6, 0, "MORE:");
             wattroff(_ncPanelWin, A_BOLD);
@@ -112,9 +112,9 @@ void DisplayWindow::copyIdentityToClipboard()
     if(item != nullptr)
     {
         int index = std::stoi(item_description(item));
-        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        if(!_database->nodeContent(_route).children[index].isGroup())
         {
-            std::string identity = _database->nodeContent(_route)["children"][index]["identity"].as<std::string>();
+            std::string identity = _database->nodeContent(_route).children[index].identity;
             clip::set_text(identity);
         }
     }
@@ -126,12 +126,24 @@ void DisplayWindow::copyPasswordToClipboard()
     if(item != nullptr)
     {
         int index = std::stoi(item_description(item));
-        if(!_database->nodeContent(_route)["children"][index]["children"].IsDefined())
+        if(!_database->nodeContent(_route).children[index].isGroup())
         {
-            std::string password = _database->nodeContent(_route)["children"][index]["password"].as<std::string>();
+            std::string password = _database->nodeContent(_route).children[index].password;
             clip::set_text(password);
         }
     }
+}
+
+std::string DisplayWindow::selectedRoute()
+{
+    std::string route = "";
+    ITEM* item = current_item(_ncMenu);
+    if(item != nullptr)
+    {
+        int index = std::stoi(item_description(item));
+        route = _route + _database->nodeContent(_route).children[index].name;
+    }
+    return route;
 }
 
 WindowAction DisplayWindow::onKeyEvent(int ch)
@@ -186,8 +198,11 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
             return wa;
             break;*/
         case KEY_F(4):
-            wa.type = WindowAction::GoToRemoveWindow;
-            wa.data = _route;
+            if(selectedRoute() != "")
+            {
+                wa.type = WindowAction::GoToRemoveWindow;
+                wa.data = selectedRoute();
+            }
             return wa;
             break;
         case KEY_F(5):
@@ -218,17 +233,17 @@ void DisplayWindow::update()
     mvprintw(rows-3, 2*cols/3, "Backspace: go back up");
     mvprintw(rows-2, 2*cols/3, "Ctrl+C: exit");
 
-    YAML::Node currentNode = _database->nodeContent(_route);
+    Node currentNode = _database->nodeContent(_route);
 
     _menuItems.clear();
     _ncMenuItems.clear();
-    for(size_t i = 0; i < currentNode["children"].size(); i++)
+    for(size_t i = 0; i < currentNode.children.size(); i++)
     {
-        if(currentNode["children"][i]["name"].IsDefined())
+        if(!currentNode.children[i].name.empty())
         {
             MenuItem menuitem;
-            menuitem.name = currentNode["children"][i]["name"].as<std::string>();
-            menuitem.isGroup = currentNode["children"][i]["children"].IsDefined();
+            menuitem.name = currentNode.children[i].name;
+            menuitem.isGroup = currentNode.children[i].isGroup();
             menuitem.pos = std::to_string(i);
 
             _menuItems.push_back(menuitem);

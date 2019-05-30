@@ -32,6 +32,29 @@ std::string Database::filename() const
     return _oldFilename;
 }
 
+Node Database::loadNode(const YAML::Node& yamlNode)
+{
+    Node node;
+    node.name = yamlNode["name"].as<std::string>();
+
+    if(yamlNode["children"].IsDefined())
+    {
+        for(size_t i = 0; i < yamlNode["children"].size(); i++)
+        {
+            Node child = loadNode(yamlNode["children"][i]);
+            node.children.push_back(child);
+        }
+    }
+    else
+    {
+        node.identity = yamlNode["identity"].as<std::string>();
+        node.password = yamlNode["password"].as<std::string>();
+        node.more = yamlNode["more"].as<std::string>();
+    }
+
+    return node;
+}
+
 bool Database::open(const std::string& password)
 {
     if(isOpened())
@@ -67,7 +90,13 @@ bool Database::open(const std::string& password)
     else
     {
         _opened = true;
-        _rootNode =  YAML::Load(decryptedstr);
+        YAML::Node yamlNode = YAML::Load(decryptedstr);
+
+        for(size_t i = 0; i < yamlNode.size(); i++)
+        {
+            Node child = loadNode(yamlNode[i]);
+            _rootNode.children.push_back(child);
+        }
     }
 
     return isOpened();
@@ -78,58 +107,42 @@ bool Database::isOpened() const
     return _opened;
 }
 
-YAML::Node Database::nodeContent(const std::string& route)
+Node& Database::nodeContent(const std::string& route)
 {
 	std::vector<std::string> groups = split(route, '/');
 
-	YAML::Node node = _rootNode;
-	if(groups.size() > 0)
-        return subNode(node, groups);
+    if(groups.size() > 0)
+    {
+        return subNode(_rootNode, groups);
+    }
 
-	return node;
+	return _rootNode;
 }
 
-YAML::Node Database::subNode(YAML::Node& node, std::vector<std::string>& groups)
+Node& Database::subNode(Node& node, std::vector<std::string>& groups)
 {
     if(groups.size() > 0)
     {
-        bool found = false;
-        YAML::Node childNode;
-
-        for(size_t i = 0; i < node["children"].size(); i++)
+        for(size_t i = 0; i < node.children.size(); i++)
         {
-            if(node["children"][i]["name"].as<std::string>() == groups[0])
+            if(node.children[i].name == groups[0])
             {
-                childNode = node["children"][i];
-                found = true;
-                break;
+                groups.erase(groups.begin());
+                return subNode(node.children[i], groups);
             }
         }
 
-        if(!found)
-        {
-            childNode["name"] = groups[0];
-            childNode["children"] = YAML::Node(YAML::NodeType::Sequence);
-            node["children"].push_back(childNode);
-        }
+        Node childNode;
+        childNode.name = groups[0];
+        node.children.push_back(childNode);
 
         groups.erase(groups.begin());
-        return subNode(childNode, groups);
+        return subNode(node.children[node.children.size()-1], groups);
     }
     else
     {
         return node;
     }
-}
-
-void Database::operator[](const std::string& route)
-{
-	nodeContent(route);
-}
-
-void Database::addKeyNode(const std::string& route, const Key& key)
-{
-	addKeyNode(route, key.name, key.identity, key.password, key.more);
 }
 
 void Database::addKeyNode(
@@ -140,29 +153,57 @@ void Database::addKeyNode(
     const std::string& more
     )
 {
-	YAML::Node node = nodeContent(route);
+	Node& node = nodeContent(route);
 
-    YAML::Node key;
-    key["name"] = name;
-	key["identity"] = identity;
-	key["password"] = password;
-	key["more"] = more;
+    Node key;
+    key.name = name;
+	key.identity = identity;
+	key.password = password;
+	key.more = more;
 
-    node["children"].push_back(key);
+    node.children.push_back(key);
 }
 
 void Database::removeNode(const std::string& route)
 {
-	std::vector<std::string> groups = split(route, '/');
+    std::string r = route.substr(0, route.find_last_of('/')+1);
+    std::string child = route.substr(r.find_last_of('/')+1);
+    Node& parent = nodeContent(r);
+    auto it = std::find_if(
+        parent.children.begin(),
+        parent.children.end(),
+        [child] (const Node& node) {
+            return node.name == child;
+        });
+    if(it != parent.children.end())
+    {
+    	parent.children.erase(it);
+    }
 
-    size_t i = 0;
-	YAML::Node node = _rootNode;
-	for(i = 0; i < groups.size()-1; i++)
-	{
-		node = node[groups[i]];
-	}
+}
 
-	node.remove(groups[i]);
+YAML::Node Database::saveNode(const Node& node)
+{
+    YAML::Node yamlNode;
+    yamlNode["name"] = node.name;
+
+    if(node.isGroup())
+    {
+        yamlNode["children"] = YAML::Node(YAML::NodeType::Sequence);
+        for(size_t i = 0; i < node.children.size(); i++)
+        {
+            YAML::Node child = saveNode(node.children[i]);
+            yamlNode["children"].push_back(child);
+        }
+    }
+    else
+    {
+        yamlNode["identity"] = node.identity;
+        yamlNode["password"] = node.password;
+        yamlNode["more"] = node.more;
+    }
+
+    return yamlNode;
 }
 
 bool Database::save()
@@ -175,8 +216,15 @@ bool Database::save(const std::string& filename)
     if(!isOpened())
         return false;
 
+    YAML::Node yamlNode;
+    for(size_t i = 0; i < _rootNode.children.size(); i++)
+    {
+        YAML::Node child = saveNode(_rootNode.children[i]);
+        yamlNode.push_back(child);
+    }
+
     std::stringstream yamlStream;
-	yamlStream << _rootNode;
+	yamlStream << yamlNode;
 
     std::string encryptedstr;
 

@@ -5,10 +5,17 @@
 
 class RemoveWindow : public RouteAwareWindow
 {
+    WINDOW* _ncTitleWin;
+
+protected:
+    virtual void clean();
+
 public:
     RemoveWindow();
+    ~RemoveWindow();
 
     virtual WindowAction onKeyEvent(int ch);
+    virtual void update();
 };
 
 #endif // REMOVEWINDOW_H

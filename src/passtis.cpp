@@ -79,7 +79,8 @@ int Passtis::exec()
             clear();
             _currentWindow = _displayWindow.get();
             _displayWindow->setDatabase(_database);
-            _displayWindow->setRoute(wa.data);
+            if(wa.data != "")
+                _displayWindow->setRoute(wa.data);
             _displayWindow->update();
         }
 
