@@ -42,7 +42,8 @@ WindowAction UnlockWindow::tryUnlock()
     {
         _message = "UNLOCK FAILED: ";
         _message += password;
-        update();
+        mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
+        wrefresh(_ncMsgWin);
     }
 
     return wa;
@@ -71,6 +72,12 @@ WindowAction UnlockWindow::onKeyEvent(int ch)
         default:
             form_driver(_ncForm, ch);
             break;
+    }
+
+    if(std::string(keyname(ch)) == "^C")
+    {
+        wa.type = WindowAction::Quit;
+        return wa;
     }
 
     return Window::onKeyEvent(ch);
@@ -111,16 +118,14 @@ void UnlockWindow::update()
         wrefresh(_ncTitleWin);
     }
 
-    if(_message != "")
-    {
-        _ncMsgWin = newwin(1, cols, rows-1, 0);
-        wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title));
+    _ncMsgWin = newwin(1, cols, rows-1, 0);
+    wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title));
 
-        mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
+    mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
 
-        wrefresh(_ncMsgWin);
-    }
+    wrefresh(_ncMsgWin);
 
     mvprintw(2, (cols-labelLength-fieldLength)/2, "Password:");
-    move(2, fieldPos);
+
+    form_driver(_ncForm, REQ_END_LINE);
 }

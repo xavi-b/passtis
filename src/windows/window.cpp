@@ -27,7 +27,7 @@ WindowAction Window::onKeyEvent(int ch)
 
     if(std::string(keyname(ch)) == "^C")
     {
-        wa.type = WindowAction::Quit;
+        wa.type = WindowAction::GoToQuitWindow;
         return wa;
     }
 

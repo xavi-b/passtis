@@ -93,7 +93,7 @@ WindowAction NewWindow::onKeyEvent(int ch)
         case 10: // enter
             return newNode();
             break;
-        case 27: // escape1);
+        case 27: // escape
             wa.type = WindowAction::GoToDisplayWindow;
             wa.data = _route;
             return wa;
