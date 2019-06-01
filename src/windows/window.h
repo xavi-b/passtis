@@ -14,6 +14,7 @@ struct WindowAction
         GoToNewWindow,
         GoToEditWindow,
         GoToRemoveWindow,
+        GoToMoveWindow,
         GoToQuitWindow,
         Quit
     };

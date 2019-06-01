@@ -101,6 +101,13 @@ WindowAction NewWindow::onKeyEvent(int ch)
             break;
     }
 
+    if(std::string(keyname(ch)) == "^C")
+    {
+        wa.type = WindowAction::GoToDisplayWindow;
+        wa.data = _route;
+        return wa;
+    }
+
     wrefresh(_ncFormWin);
 
     return RouteAwareWindow::onKeyEvent(ch);

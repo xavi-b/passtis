@@ -194,12 +194,14 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
             }
             return wa;
             break;
-        // TODO
-        /*case KEY_F(3):
-            wa.type = WindowAction::GoToMoveWindow;
-            wa.data = _route;
+        case KEY_F(3):
+            if(selectedRoute() != "")
+            {
+                wa.type = WindowAction::GoToMoveWindow;
+                wa.data = selectedRoute();
+            }
             return wa;
-            break;*/
+            break;
         case KEY_F(4):
             if(selectedRoute() != "")
             {

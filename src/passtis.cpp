@@ -54,6 +54,7 @@ bool Passtis::init(int argc, char* argv[])
     _newWindow = std::make_unique<NewWindow>();
     _editWindow = std::make_unique<EditWindow>();
     _removeWindow = std::make_unique<RemoveWindow>();
+    _moveWindow = std::make_unique<MoveWindow>();
     _quitWindow = std::make_unique<QuitWindow>();
 
     _currentWindow = _unlockWindow.get();
@@ -109,6 +110,15 @@ int Passtis::exec()
             _removeWindow->setDatabase(_database);
             _removeWindow->setRoute(wa.data);
             _removeWindow->update();
+        }
+
+        if(wa.type == WindowAction::GoToMoveWindow)
+        {
+            clear();
+            _currentWindow = _moveWindow.get();
+            _moveWindow->setDatabase(_database);
+            _moveWindow->setRoute(wa.data);
+            _moveWindow->update();
         }
 
         if(wa.type == WindowAction::GoToQuitWindow)

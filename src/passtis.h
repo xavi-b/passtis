@@ -12,6 +12,7 @@
 #include "windows/newwindow.h"
 #include "windows/editwindow.h"
 #include "windows/removewindow.h"
+#include "windows/movewindow.h"
 #include "windows/quitwindow.h"
 
 class Passtis
@@ -27,6 +28,7 @@ private:
     std::unique_ptr<NewWindow>      _newWindow;
     std::unique_ptr<EditWindow>     _editWindow;
     std::unique_ptr<RemoveWindow>   _removeWindow;
+    std::unique_ptr<MoveWindow>     _moveWindow;
     std::unique_ptr<QuitWindow>     _quitWindow;
 
     static Passtis* Instance();
