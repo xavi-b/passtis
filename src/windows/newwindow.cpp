@@ -1,7 +1,5 @@
 #include "newwindow.h"
 
-#include <assert.h> // TODO
-
 NewWindow::NewWindow()
   : RouteAwareWindow(),
     _ncTitleWin(nullptr),
@@ -162,15 +160,12 @@ void NewWindow::update()
         wrefresh(_ncTitleWin);
     }
 
-    if(_message != "")
-    {
-        _ncMsgWin = newwin(1, cols, rows-1, 0);
-        wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title));
+    _ncMsgWin = newwin(1, cols, rows-1, 0);
+    wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title));
 
-        mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
+    mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
 
-        wrefresh(_ncMsgWin);
-    }
+    wrefresh(_ncMsgWin);
 
     wrefresh(_ncFormWin);
     move(3, cols/2+1);

@@ -187,8 +187,11 @@ WindowAction DisplayWindow::onKeyEvent(int ch)
             return wa;
             break;
         case KEY_F(2):
-            wa.type = WindowAction::GoToEditWindow;
-            wa.data = _route;
+            if(selectedRoute() != "")
+            {
+                wa.type = WindowAction::GoToEditWindow;
+                wa.data = selectedRoute();
+            }
             return wa;
             break;
         // TODO

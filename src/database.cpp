@@ -164,6 +164,11 @@ void Database::addKeyNode(
     node.children.push_back(key);
 }
 
+std::string Database::parentRoute(const std::string& route) const
+{
+    return route.substr(0, route.find_last_of('/')+1);
+}
+
 void Database::removeNode(const std::string& route)
 {
     std::string r = route.substr(0, route.find_last_of('/')+1);

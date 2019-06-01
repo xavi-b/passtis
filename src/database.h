@@ -59,6 +59,9 @@ public:
         const std::string& password,
         const std::string& more
         );
+
+    std::string parentRoute(const std::string& route) const;
+
     void removeNode(const std::string& route);
 
     bool save();

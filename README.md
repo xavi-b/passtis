@@ -4,6 +4,7 @@
 
 #ISSUES
 
+change copy/paste lib
 node sort is wrong
 
 #LATER
