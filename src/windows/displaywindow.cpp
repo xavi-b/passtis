@@ -262,15 +262,7 @@ void DisplayWindow::update()
         if(!a.isGroup && b.isGroup)
             return false;
 
-        std::vector<std::string> names;
-        names.push_back(a.name);
-        names.push_back(b.name);
-        auto oldBegin = names.begin();
-        std::sort(names.begin(), names.end());
-        if(oldBegin == names.begin())
-            return false;
-
-        return true;
+        return a.name.compare(b.name) < 0;
     });
 
     for(size_t i = 0; i < _menuItems.size(); i++)
