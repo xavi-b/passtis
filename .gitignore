@@ -1,5 +1,7 @@
 passtis
 
+.vscode
+
 # Prerequisites
 *.d
 

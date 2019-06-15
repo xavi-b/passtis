@@ -9,6 +9,7 @@ LDFLAGS=\
 -lform \
 -lxcb \
 -lpthread \
+-lpng \
 -L third-party/clip -lclip
 EXEC=passtis
 SRC=\
