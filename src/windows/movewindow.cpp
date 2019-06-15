@@ -194,6 +194,7 @@ void MoveWindow::update()
     set_menu_win(_ncMenu, _ncMenuWin);
     set_menu_sub(_ncMenu, _ncSubMenuWin);
     set_menu_mark(_ncMenu, "> ");
+    set_menu_format(_ncMenu, rows-2-nbShortcuts-1, 1);
     menu_opts_off(_ncMenu, O_SHOWDESC);
     post_menu(_ncMenu);
 
