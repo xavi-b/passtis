@@ -7,6 +7,7 @@ LDFLAGS=\
 -lncurses \
 -lmenu \
 -lform \
+-lboost_program_options \
 -lxcb \
 -lpthread \
 -lpng \

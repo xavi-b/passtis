@@ -4,6 +4,9 @@
 #include <iostream>
 #include <ncurses.h>
 #include <signal.h>
+#include <unistd.h>
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
 
 #include "database.h"
 #include "windows/window.h"

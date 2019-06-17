@@ -28,11 +28,65 @@ void Passtis::OnResizeEvent(int sig)
 
 bool Passtis::init(int argc, char* argv[])
 {
-    std::cout << "PASSTIS" << std::endl;
-
-    if(argc <= 1)
+    try
     {
-        std::cerr << "Filename argument is missing !" << std::endl;
+        po::options_description desc("Allowed options");
+        desc.add_options()
+            ("help,h", "produce help message")
+            ("file,f", po::value<std::string>(), "database file")
+            ("route,r", po::value<std::string>(), "set compression level")
+        ;
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if(vm.count("help"))
+        {
+            std::cout << desc << std::endl;
+            return false;
+        }
+
+        if(!vm.count("file"))
+        {
+            std::cerr << "Filename argument is missing !" << std::endl;
+            return false;
+        }
+
+        _database = new Database(vm["file"].as<std::string>());
+
+        if(vm.count("route"))
+        {
+            std::string password = getpass("Password: ");
+            if(_database->open(password))
+            {
+                Node node = _database->nodeContent(vm["route"].as<std::string>());
+
+                if(!node.isGroup())
+                {
+                    std::cout << "=========" << std::endl;
+                    std::cout << "Identity: " <<  node.identity << std::endl;
+                    std::cout << "Password: " << node.password << std::endl;
+                    std::cout << "More: " << node.more << std::endl;
+                }
+                else
+                {
+                    std::cerr << "Key does not exist !" << std::endl;
+                }
+            }
+            else
+            {
+                std::cerr << "Unlock failed !" << std::endl;
+            }
+            return false;
+        }
+    }
+    catch(std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return false;
+    }
+    catch(...) {
+        std::cerr << "Unknown exception!" << std::endl;
         return false;
     }
 
@@ -43,8 +97,6 @@ bool Passtis::init(int argc, char* argv[])
     start_color();
 
     signal(SIGWINCH, &Passtis::OnResizeEvent);
-
-    _database = new Database(argv[1]);
 
     _unlockWindow = std::make_unique<UnlockWindow>();
     _unlockWindow->setDatabase(_database);
