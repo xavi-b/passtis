@@ -131,7 +131,6 @@ int Passtis::exec()
 
         if(wa.type == WindowAction::Quit)
         {
-            _database->save(); // TODO
             break;
         }
     }
