@@ -1,6 +1,9 @@
 passtis
 
+Makefile
 .vscode
+clean.sh
+out
 
 # Prerequisites
 *.d

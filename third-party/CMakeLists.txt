@@ -1,0 +1,12 @@
+add_subdirectory("clip")
+
+set(THIRD_PARTY_INCLUDE
+   ${THIRD_PARTY_INCLUDE}
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   PARENT_SCOPE
+)
+set(THIRD_PARTY_LIB
+   ${THIRD_PARTY_LIB}
+   clip
+   PARENT_SCOPE
+)
