@@ -4,7 +4,7 @@
 #include <menu.h>
 #include <algorithm>
 
-#include "clip/clip.h"
+#include "clip.h"
 
 #include "routeawarewindow.h"
 

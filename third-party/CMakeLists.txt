@@ -1,12 +1,9 @@
-add_subdirectory("clip")
+set(MODULE_NAME third-party)
 
-set(THIRD_PARTY_INCLUDE
-   ${THIRD_PARTY_INCLUDE}
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   PARENT_SCOPE
-)
-set(THIRD_PARTY_LIB
-   ${THIRD_PARTY_LIB}
-   clip
-   PARENT_SCOPE
-)
+message("Compiling \"${MODULE_NAME}\"")
+
+# clip
+set(CLIP_LIB_NAME "clip")
+set(CLIP_INC_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${CLIP_LIB_NAME}")
+
+add_subdirectory(${CLIP_LIB_NAME})

@@ -1,4 +1,4 @@
-#include "window.h"
+#include "windows/window.h"
 
 Window::Window()
   : _database(nullptr)

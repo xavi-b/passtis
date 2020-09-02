@@ -1,4 +1,4 @@
-#include "quitwindow.h"
+#include "windows/quitwindow.h"
 
 QuitWindow::QuitWindow()
   : Window(),

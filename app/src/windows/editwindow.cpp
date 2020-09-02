@@ -1,4 +1,4 @@
-#include "editwindow.h"
+#include "windows/editwindow.h"
 
 EditWindow::EditWindow()
   : RouteAwareWindow(),

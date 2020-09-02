@@ -1,4 +1,4 @@
-#include "routeawarewindow.h"
+#include "windows/routeawarewindow.h"
 
 RouteAwareWindow::RouteAwareWindow()
   : Window(),

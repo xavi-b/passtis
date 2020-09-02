@@ -37,3 +37,6 @@ out
 *.exe
 *.out
 *.app
+
+build
+.vscode

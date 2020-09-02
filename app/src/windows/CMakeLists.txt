@@ -1,0 +1,12 @@
+target_sources(${MODULE_NAME}
+   PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/displaywindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/editwindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/movewindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/newwindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/quitwindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/removewindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/routeawarewindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/unlockwindow.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/window.cpp
+)

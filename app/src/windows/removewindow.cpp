@@ -1,4 +1,4 @@
-#include "removewindow.h"
+#include "windows/removewindow.h"
 
 RemoveWindow::RemoveWindow()
   : RouteAwareWindow(),

@@ -1,4 +1,4 @@
-#include "displaywindow.h"
+#include "windows/displaywindow.h"
 
 DisplayWindow::DisplayWindow()
   : RouteAwareWindow(),

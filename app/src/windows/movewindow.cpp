@@ -1,4 +1,4 @@
-#include "movewindow.h"
+#include "windows/movewindow.h"
 
 MoveWindow::MoveWindow()
   : RouteAwareWindow(),

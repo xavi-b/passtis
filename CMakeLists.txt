@@ -1,11 +1,23 @@
-cmake_minimum_required(VERSION 3.1.2)
+cmake_minimum_required(VERSION 3.1)
 
-project(passtis)
+set(PROJECT_NAME passtis)
 
-add_subdirectory("src")
-add_subdirectory("third-party")
+project(${PROJECT_NAME})
 
-add_executable(passtis ${SOURCE} ${HEADER})
+# C++
+set(CMAKE_CXX_STANDARD              17)
+set(CMAKE_CXX_STANDARD_REQUIRED     ON)
+set(CMAKE_CXX_EXTENSIONS            OFF)
+set(CMAKE_CXX_FLAGS                 "-Wall -Wextra -Wpedantic -pthread")
 
-target_include_directories(passtis PRIVATE ${THIRD_PARTY_INCLUDE})
-target_link_libraries(passtis yaml-cpp crypto ncurses menu form boost_program_options xcb pthread png ${THIRD_PARTY_LIB})
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message("DEBUG")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
+    add_definitions(-DDEBUG)
+else()
+    message("RELEASE")
+endif()
+
+# subdirectories
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app)

@@ -1,4 +1,4 @@
-#include "newwindow.h"
+#include "windows/newwindow.h"
 
 NewWindow::NewWindow()
   : RouteAwareWindow(),
