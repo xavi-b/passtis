@@ -1,52 +1,42 @@
 #ifndef PASSTIS_H
 #define PASSTIS_H
 
-#include <iostream>
-#include <ncurses.h>
-#include <signal.h>
-#include <unistd.h>
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include <memory>
 
-#include "database.h"
-#include "windows/window.h"
-#include "windows/unlockwindow.h"
-#include "windows/displaywindow.h"
-#include "windows/newwindow.h"
-#include "windows/editwindow.h"
-#include "windows/removewindow.h"
-#include "windows/movewindow.h"
-#include "windows/quitwindow.h"
+class Window;
+class UnlockWindow;
+class DisplayWindow;
+class NewWindow;
+class EditWindow;
+class RemoveWindow;
+class MoveWindow;
+class QuitWindow;
 
 class Passtis
 {
 private:
-    bool _initialized;
-    Database* _database;
+    bool _run;
 
-    Window* _currentWindow;
+    std::shared_ptr<Window>        _currentWindow;
+    std::shared_ptr<UnlockWindow>  _unlockWindow;
+    std::shared_ptr<DisplayWindow> _displayWindow;
+    std::shared_ptr<NewWindow>     _newWindow;
+    std::shared_ptr<EditWindow>    _editWindow;
+    std::shared_ptr<RemoveWindow>  _removeWindow;
+    std::shared_ptr<MoveWindow>    _moveWindow;
+    std::shared_ptr<QuitWindow>    _quitWindow;
 
-    std::unique_ptr<UnlockWindow>   _unlockWindow;
-    std::unique_ptr<DisplayWindow>  _displayWindow;
-    std::unique_ptr<NewWindow>      _newWindow;
-    std::unique_ptr<EditWindow>     _editWindow;
-    std::unique_ptr<RemoveWindow>   _removeWindow;
-    std::unique_ptr<MoveWindow>     _moveWindow;
-    std::unique_ptr<QuitWindow>     _quitWindow;
-
-    static Passtis* Instance();
+    Passtis();
 
 public:
-    Passtis();
     ~Passtis();
 
-    static void OnResizeEvent(int sig);
+    static Passtis* instance();
 
-    bool init(int argc, char* argv[]);
-    int exec();
+    void resize();
 
-    static bool Init(int argc, char* argv[]);
-    static int Exec();
+    void init(int argc, char* argv[]);
+    int  exec();
 };
 
 #endif // PASTEES_H

@@ -11,18 +11,20 @@ class MoveWindow : public RouteAwareWindow
 private:
     struct MenuItem
     {
-        std::string name = "ITEM";
-        bool isGroup = false;
-        std::string pos = "0";
+        std::string name    = "ITEM";
+        bool        isGroup = false;
+        std::string pos     = "0";
     };
 
-    WINDOW* _ncTitleWin;
-    WINDOW* _ncMenuWin;
-    WINDOW* _ncSubMenuWin;
-    std::vector<ITEM*> _ncMenuItems;
+    WINDOW*               _ncTitleWin;
+    WINDOW*               _ncMsgWin;
+    WINDOW*               _ncMenuWin;
+    WINDOW*               _ncSubMenuWin;
+    std::vector<ITEM*>    _ncMenuItems;
     std::vector<MenuItem> _menuItems;
-    MENU* _ncMenu;
-    std::string _oldRoute;
+    MENU*                 _ncMenu;
+    std::string           _oldRoute;
+    std::string           _message;
 
 protected:
     virtual void clean();
@@ -39,9 +41,9 @@ public:
     ~MoveWindow();
 
     virtual WindowAction onKeyEvent(int ch);
-    virtual void update();
+    virtual void         update();
 
-    void setRoute(const std::string& route);
+    virtual void setRoute(const std::string& route) override;
 };
 
 #endif // MOVEWINDOW_H

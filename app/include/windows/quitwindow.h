@@ -8,11 +8,11 @@
 class QuitWindow : public Window
 {
 private:
-    WINDOW* _ncTitleWin;
-    WINDOW* _ncMsgWin;
+    WINDOW*               _ncTitleWin;
+    WINDOW*               _ncMsgWin;
     std::array<FIELD*, 2> _ncFields;
-    FORM* _ncForm;
-    std::string _message;
+    FORM*                 _ncForm;
+    std::string           _message;
 
 protected:
     virtual void clean();

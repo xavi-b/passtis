@@ -1,14 +1,8 @@
 #include "windows/window.h"
 
 Window::Window()
-  : _database(nullptr)
 {
-    init_pair(WindowColor::Title, COLOR_BLACK, COLOR_WHITE);
-}
-
-void Window::setDatabase(Database* database)
-{
-    _database = database;
+    init_pair(WindowColor::Title, COLOR_BLACK, COLOR_YELLOW);
 }
 
 void Window::onResizeEvent()

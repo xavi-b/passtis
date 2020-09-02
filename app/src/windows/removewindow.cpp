@@ -1,10 +1,7 @@
 #include "windows/removewindow.h"
 
-RemoveWindow::RemoveWindow()
-  : RouteAwareWindow(),
-    _ncTitleWin(nullptr)
+RemoveWindow::RemoveWindow() : RouteAwareWindow(), _ncTitleWin(nullptr)
 {
-
 }
 
 RemoveWindow::~RemoveWindow()
@@ -21,19 +18,19 @@ WindowAction RemoveWindow::onKeyEvent(int ch)
 {
     WindowAction wa;
 
-    switch(ch)
+    switch (ch)
     {
-        case 'y':
-            _database->removeNode(_route);
-            wa.type = WindowAction::GoToDisplayWindow;
-            return wa;
-            break;
-        case 'n':
-            wa.type = WindowAction::GoToDisplayWindow;
-            return wa;
-            break;
-        default:
-            break;
+    case 'y':
+        Database::instance()->removeNode(_route);
+        wa.type = WindowAction::GoToDisplayWindow;
+        return wa;
+        break;
+    case 'n':
+        wa.type = WindowAction::GoToDisplayWindow;
+        return wa;
+        break;
+    default:
+        break;
     }
 
     return RouteAwareWindow::onKeyEvent(ch);
@@ -48,19 +45,16 @@ void RemoveWindow::update()
 
     refresh();
 
-    if(_database)
-    {
-        _ncTitleWin = newwin(1, cols, 0, 0);
-        wbkgd(_ncTitleWin, COLOR_PAIR(WindowColor::Title));
+    _ncTitleWin = newwin(1, cols, 0, 0);
+    wbkgd(_ncTitleWin, COLOR_PAIR(WindowColor::Title) | ' ');
 
-        std::string title = _database->filename() + " - " + _route;
-        mvwprintw(_ncTitleWin, 0, (cols-title.size())/2, title.c_str());
+    std::string title = Database::instance()->filename() + " - " + _route;
+    mvwprintw(_ncTitleWin, 0, (cols - title.size()) / 2, title.c_str());
 
-        wrefresh(_ncTitleWin);
-    }
+    wrefresh(_ncTitleWin);
 
-    std::string str = "Confirm removal of " + _route + " ? (y/n)";
-    int halfPosWidth = (cols-str.size())/2;
-    int halfPosHeight = (rows-1)/2;
+    std::string str           = "Confirm removal of " + _route + " ? (y/n)";
+    int         halfPosWidth  = (cols - str.size()) / 2;
+    int         halfPosHeight = (rows - 1) / 2;
     mvprintw(halfPosHeight, halfPosWidth, str.c_str());
 }

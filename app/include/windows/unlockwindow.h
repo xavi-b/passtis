@@ -8,18 +8,19 @@
 class UnlockWindow : public Window
 {
 private:
-    WINDOW* _ncTitleWin;
-    WINDOW* _ncMsgWin;
+    WINDOW*               _ncTitleWin;
+    WINDOW*               _ncMsgWin;
     std::array<FIELD*, 2> _ncFields;
-    FORM* _ncForm;
-    std::string _message;
+    FORM*                 _ncForm;
+    std::string           _message;
+    std::string           _filename;
 
 protected:
     virtual void clean();
     WindowAction tryUnlock();
 
 public:
-    UnlockWindow();
+    UnlockWindow(std::string const& filename);
     ~UnlockWindow();
 
     virtual WindowAction onKeyEvent(int ch);

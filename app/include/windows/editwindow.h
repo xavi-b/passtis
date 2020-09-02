@@ -8,13 +8,13 @@
 class EditWindow : public RouteAwareWindow
 {
 private:
-    WINDOW* _ncTitleWin;
-    WINDOW* _ncMsgWin;
+    WINDOW*               _ncTitleWin;
+    WINDOW*               _ncMsgWin;
     std::array<FIELD*, 5> _ncFields;
-    FORM* _ncForm;
-    WINDOW* _ncFormWin;
-    WINDOW* _ncFormSubWin;
-    std::string _message;
+    FORM*                 _ncForm;
+    WINDOW*               _ncFormWin;
+    WINDOW*               _ncFormSubWin;
+    std::string           _message;
 
 protected:
     virtual void clean();
@@ -25,7 +25,7 @@ public:
     ~EditWindow();
 
     virtual WindowAction onKeyEvent(int ch);
-    virtual void update();
+    virtual void         update();
 };
 
 #endif // EDITWINDOW_H

@@ -15,7 +15,7 @@ public:
     ~RemoveWindow();
 
     virtual WindowAction onKeyEvent(int ch);
-    virtual void update();
+    virtual void         update();
 };
 
 #endif // REMOVEWINDOW_H

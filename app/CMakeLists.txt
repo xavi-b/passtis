@@ -8,9 +8,10 @@ add_executable(${MODULE_NAME} "")
 find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(Curses REQUIRED)
+find_library(NCURSESW_LIBRARY ncursesw)
 find_library(MENU_LIBRARY menu)
 find_library(FORM_LIBRARY form)
+find_package(spdlog REQUIRED)
 
 target_include_directories(${MODULE_NAME}
     PUBLIC
@@ -22,9 +23,10 @@ target_link_libraries(${MODULE_NAME}
         ${Boost_LIBRARIES}
         ${OPENSSL_CRYPTO_LIBRARY}
         ${YAML_CPP_LIBRARIES}
-        ${CURSES_LIBRARIES}
+        ${NCURSESW_LIBRARY}
         ${MENU_LIBRARY}
         ${FORM_LIBRARY}
+        spdlog::spdlog
         clip
 )
 

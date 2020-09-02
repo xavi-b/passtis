@@ -8,7 +8,8 @@
 
 struct WindowAction
 {
-    enum Type {
+    enum Type
+    {
         Nothing = 0,
         GoToDisplayWindow,
         GoToNewWindow,
@@ -19,14 +20,11 @@ struct WindowAction
         Quit
     };
 
-    Type type;
+    Type        type = Nothing;
     std::string data;
 
-    WindowAction()
-      : type(Type::Nothing),
-        data("")
+    WindowAction() : type(Type::Nothing), data("")
     {
-
     }
 };
 
@@ -37,17 +35,12 @@ enum WindowColor
 
 class Window
 {
-protected:
-    Database* _database;
-
 public:
     Window();
 
-    void setDatabase(Database* database);
-
-    virtual void onResizeEvent();
+    virtual void         onResizeEvent();
     virtual WindowAction onKeyEvent(int ch);
-    //virtual onMouseEvent() = 0;
+    // virtual onMouseEvent() = 0;
 
     virtual void update();
 };

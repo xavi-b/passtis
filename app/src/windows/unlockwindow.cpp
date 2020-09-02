@@ -1,11 +1,7 @@
 #include "windows/unlockwindow.h"
 
-UnlockWindow::UnlockWindow()
-  : Window(),
-    _ncTitleWin(nullptr),
-    _ncMsgWin(nullptr),
-    _ncForm(nullptr),
-    _message("")
+UnlockWindow::UnlockWindow(std::string const& filename)
+    : Window(), _ncTitleWin(nullptr), _ncMsgWin(nullptr), _ncForm(nullptr), _message(""), _filename(filename)
 {
     _ncFields[0] = nullptr;
     _ncFields[1] = nullptr;
@@ -33,7 +29,7 @@ WindowAction UnlockWindow::tryUnlock()
     std::string password = field_buffer(_ncFields[0], 0);
     password.resize(password.find_first_of(' '));
 
-    if(_database->open(password))
+    if (Database::instance()->open(_filename, password))
     {
         wa.type = WindowAction::GoToDisplayWindow;
         wa.data = "/";
@@ -53,28 +49,30 @@ WindowAction UnlockWindow::onKeyEvent(int ch)
 {
     WindowAction wa;
 
-    switch(ch)
+    switch (ch)
     {
-        case KEY_DOWN:
-            form_driver(_ncForm, REQ_NEXT_FIELD);
-            form_driver(_ncForm, REQ_END_LINE);
-            break;
-        case KEY_UP:
-            form_driver(_ncForm, REQ_PREV_FIELD);
-            form_driver(_ncForm, REQ_END_LINE);
-            break;
-        case 127: // backspace
-            form_driver(_ncForm, REQ_DEL_PREV);
-            break;
-        case 10: // enter
-            return tryUnlock();
-            break;
-        default:
-            form_driver(_ncForm, ch);
-            break;
+    case KEY_DOWN:
+    case 9: // tab
+        form_driver(_ncForm, REQ_NEXT_FIELD);
+        form_driver(_ncForm, REQ_END_LINE);
+        break;
+    case KEY_UP:
+    case KEY_BTAB:
+        form_driver(_ncForm, REQ_PREV_FIELD);
+        form_driver(_ncForm, REQ_END_LINE);
+        break;
+    case 127: // backspace
+        form_driver(_ncForm, REQ_DEL_PREV);
+        break;
+    case 10: // enter
+        return tryUnlock();
+        break;
+    default:
+        form_driver(_ncForm, ch);
+        break;
     }
 
-    if(std::string(keyname(ch)) == "^C")
+    if (std::string(keyname(ch)) == "^C")
     {
         wa.type = WindowAction::Quit;
         return wa;
@@ -93,7 +91,7 @@ void UnlockWindow::update()
     int fieldLength = 32;
     int labelLength = 16;
 
-    int fieldPos = (cols-labelLength-fieldLength)/2+labelLength;
+    int fieldPos = (cols - labelLength - fieldLength) / 2 + labelLength;
     _ncFields[0] = new_field(1, fieldLength, 2, fieldPos, 0, 0);
     _ncFields[1] = nullptr;
 
@@ -101,31 +99,27 @@ void UnlockWindow::update()
     field_opts_off(_ncFields[0], O_AUTOSKIP);
     field_opts_off(_ncFields[0], O_PUBLIC);
     field_opts_on(_ncFields[0], O_EDIT);
-    set_field_type(_ncFields[0], TYPE_ALNUM, 1); // TODO issue
+    // set_field_type(_ncFields[0], TYPE_ALNUM, 1); // TODO issue
 
     _ncForm = new_form(&_ncFields[0]);
     post_form(_ncForm);
     refresh();
 
-    if(_database)
-    {
-        _ncTitleWin = newwin(1, cols, 0, 0);
-        wbkgd(_ncTitleWin, COLOR_PAIR(WindowColor::Title));
+    _ncTitleWin = newwin(1, cols, 0, 0);
+    wbkgd(_ncTitleWin, COLOR_PAIR(WindowColor::Title) | ' ');
 
-        std::string title = _database->filename();
-        mvwprintw(_ncTitleWin, 0, (cols-title.size())/2, title.c_str());
+    mvwprintw(_ncTitleWin, 0, (cols - _filename.size()) / 2, _filename.c_str());
 
-        wrefresh(_ncTitleWin);
-    }
+    wrefresh(_ncTitleWin);
 
-    _ncMsgWin = newwin(1, cols, rows-1, 0);
-    wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title));
+    _ncMsgWin = newwin(1, cols, rows - 1, 0);
+    wbkgd(_ncMsgWin, COLOR_PAIR(WindowColor::Title) | ' ');
 
     mvwprintw(_ncMsgWin, 0, 0, _message.c_str());
 
     wrefresh(_ncMsgWin);
 
-    mvprintw(2, (cols-labelLength-fieldLength)/2, "Password:");
+    mvprintw(2, (cols - labelLength - fieldLength) / 2, "Password:");
 
     form_driver(_ncForm, REQ_END_LINE);
 }

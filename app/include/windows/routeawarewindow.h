@@ -12,7 +12,7 @@ protected:
 
 public:
     RouteAwareWindow();
-    void setRoute(const std::string& route);
+    virtual void setRoute(const std::string& route);
 };
 
 #endif // ROUTEAWAREWINDOW_H

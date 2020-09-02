@@ -1,23 +1,22 @@
 #include "encryptor.h"
 
+#include <spdlog/spdlog.h>
+
 Encryptor::Encryptor(const std::string& key, const std::string& iv)
-  : _key(key),
-    _iv(iv),
-    _initialized(false),
-    _ctx(nullptr)
+    : _key(key), _iv(iv), _initialized(false), _ctx(nullptr)
 {
     _ctx = EVP_CIPHER_CTX_new();
 
-    if(_ctx)
+    if (_ctx)
     {
-        _error = "Failure during Encryptor initialization !";
+        _error       = "Failure during Encryptor initialization !";
         _initialized = true;
     }
 }
 
 Encryptor::~Encryptor()
 {
-    if(_ctx)
+    if (_ctx)
         EVP_CIPHER_CTX_free(_ctx);
 }
 
@@ -33,17 +32,17 @@ bool Encryptor::isInitialized() const
 
 bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
 {
-    if(!isInitialized())
+    if (!isInitialized())
     {
         _error = "Encryptor not initialized !";
         return false;
     }
 
-    int ret = 0;
-    int len = 0;
+    int ret      = 0;
+    int len      = 0;
     int finalLen = 0;
 
-    encryptedstr.resize(str.size()+_iv.size());
+    encryptedstr.resize(str.size() + _iv.size());
 
     /*
      * Initialise the encryption operation. IMPORTANT - ensure you use a key
@@ -52,15 +51,9 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
      * IV size for *most* modes is the same as the block size. For AES this
      * is 128 bits
      */
-    ret = EVP_EncryptInit_ex(
-        _ctx,
-        EVP_aes_256_cbc(),
-        NULL,
-        (const byte*)_key.c_str(),
-        (const byte*)_iv.c_str()
-        );
+    ret = EVP_EncryptInit_ex(_ctx, EVP_aes_256_cbc(), NULL, (const byte*)_key.c_str(), (const byte*)_iv.c_str());
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;
@@ -70,15 +63,9 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
      * Provide the message to be encrypted, and obtain the encrypted output.
      * EVP_EncryptUpdate can be called multiple times if necessary
      */
-    ret = EVP_EncryptUpdate(
-        _ctx,
-        (byte*)encryptedstr.data(),
-        &len,
-        (byte*)str.c_str(),
-        str.size()
-        );
+    ret = EVP_EncryptUpdate(_ctx, (byte*)encryptedstr.data(), &len, (byte*)str.c_str(), str.size());
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;
@@ -88,13 +75,9 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
      * Finalise the encryption. Further ciphertext bytes may be written at
      * this stage.
      */
-    ret = EVP_EncryptFinal_ex(
-        _ctx,
-        ((byte*)encryptedstr.data()) + len,
-        &finalLen
-        );
+    ret = EVP_EncryptFinal_ex(_ctx, ((byte*)encryptedstr.data()) + len, &finalLen);
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;
@@ -107,17 +90,17 @@ bool Encryptor::encrypt(const std::string& str, std::string& encryptedstr)
 
 bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
 {
-    if(!isInitialized())
+    if (!isInitialized())
     {
-        std::cerr << "Encryptor not initialized !" << std::endl;
+        _error = "Encryptor not initialized !";
         return false;
     }
 
-    int ret = 0;
-    int len = 0;
+    int ret      = 0;
+    int len      = 0;
     int finalLen = 0;
 
-    decryptedstr.resize(str.size()+_iv.size());
+    decryptedstr.resize(str.size() + _iv.size());
 
     /*
      * Initialise the decryption operation. IMPORTANT - ensure you use a key
@@ -126,15 +109,9 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
      * IV size for *most* modes is the same as the block size. For AES this
      * is 128 bits
      */
-    ret = EVP_DecryptInit_ex(
-        _ctx,
-        EVP_aes_256_cbc(),
-        NULL,
-        (const byte*)_key.c_str(),
-        (const byte*)_iv.c_str()
-        );
+    ret = EVP_DecryptInit_ex(_ctx, EVP_aes_256_cbc(), NULL, (const byte*)_key.c_str(), (const byte*)_iv.c_str());
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;
@@ -144,15 +121,9 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
      * Provide the message to be decrypted, and obtain the plaintext output.
      * EVP_DecryptUpdate can be called multiple times if necessary.
      */
-    ret = EVP_DecryptUpdate(
-        _ctx,
-        (byte*)decryptedstr.data(),
-        &len,
-        (byte*)str.c_str(),
-        str.size()
-        );
+    ret = EVP_DecryptUpdate(_ctx, (byte*)decryptedstr.data(), &len, (byte*)str.c_str(), str.size());
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;
@@ -162,13 +133,9 @@ bool Encryptor::decrypt(const std::string& str, std::string& decryptedstr)
      * Finalise the decryption. Further plaintext bytes may be written at
      * this stage.
      */
-    ret = EVP_DecryptFinal_ex(
-        _ctx,
-        ((byte*)decryptedstr.data()) + len,
-        &finalLen
-        );
+    ret = EVP_DecryptFinal_ex(_ctx, ((byte*)decryptedstr.data()) + len, &finalLen);
 
-    if(!ret)
+    if (!ret)
     {
         _error = ERR_error_string(ERR_get_error(), nullptr);
         return false;

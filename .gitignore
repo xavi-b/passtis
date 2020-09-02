@@ -40,3 +40,5 @@ out
 
 build
 .vscode
+logs
+*.pass

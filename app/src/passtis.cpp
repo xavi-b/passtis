@@ -1,201 +1,175 @@
 #include "passtis.h"
 
-Passtis::Passtis()
-  : _initialized(false),
-    _database(nullptr),
-    _currentWindow(nullptr)
-{
+#include <iostream>
+#include <ncurses.h>
+#include <signal.h>
+#include <unistd.h>
+#include <boost/program_options.hpp>
+#include <spdlog/spdlog.h>
 
+#include "database.h"
+#include "windows/window.h"
+#include "windows/unlockwindow.h"
+#include "windows/displaywindow.h"
+#include "windows/newwindow.h"
+#include "windows/editwindow.h"
+#include "windows/removewindow.h"
+#include "windows/movewindow.h"
+#include "windows/quitwindow.h"
+
+namespace po = boost::program_options;
+
+static void onResizeEvent(int /*sig*/)
+{
+    Passtis::instance()->resize();
+}
+
+void Passtis::resize()
+{
+    _currentWindow->onResizeEvent();
+}
+
+Passtis::Passtis() : _run(false), _currentWindow(nullptr)
+{
 }
 
 Passtis::~Passtis()
 {
-    if(_database)
-        delete _database;
     endwin();
 }
 
-Passtis* Passtis::Instance()
+Passtis* Passtis::instance()
 {
     static Passtis instance;
     return &instance;
 }
 
-void Passtis::OnResizeEvent(int sig)
+void Passtis::init(int argc, char* argv[])
 {
-    Instance()->_currentWindow->onResizeEvent();
-}
+    po::options_description desc("Allowed options");
+    desc.add_options()("help,h", "produce help message")("file,f", po::value<std::string>(), "database file")(
+        "route,r", po::value<std::string>(), "set compression level");
 
-bool Passtis::init(int argc, char* argv[])
-{
-    try
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help"))
     {
-        po::options_description desc("Allowed options");
-        desc.add_options()
-            ("help,h", "produce help message")
-            ("file,f", po::value<std::string>(), "database file")
-            ("route,r", po::value<std::string>(), "set compression level")
-        ;
+        std::cout << desc << std::endl;
+        return;
+    }
 
-        po::variables_map vm;
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
+    if (!vm.count("file"))
+    {
+        std::cerr << "Filename argument is missing !" << std::endl;
+        return;
+    }
 
-        if(vm.count("help"))
+    std::string filename = vm["file"].as<std::string>();
+
+    if (vm.count("route"))
+    {
+        std::string password = getpass("Password: ");
+        if (Database::instance()->open(filename, password))
         {
-            std::cout << desc << std::endl;
-            return false;
-        }
+            Node* node = Database::instance()->getNode(vm["route"].as<std::string>());
 
-        if(!vm.count("file"))
-        {
-            std::cerr << "Filename argument is missing !" << std::endl;
-            return false;
-        }
-
-        _database = new Database(vm["file"].as<std::string>());
-
-        if(vm.count("route"))
-        {
-            std::string password = getpass("Password: ");
-            if(_database->open(password))
+            if (node && !node->isGroup())
             {
-                Node node = _database->nodeContent(vm["route"].as<std::string>());
-
-                if(!node.isGroup())
-                {
-                    std::cout << "=========" << std::endl;
-                    std::cout << "Identity: " <<  node.identity << std::endl;
-                    std::cout << "Password: " << node.password << std::endl;
-                    std::cout << "More: " << node.more << std::endl;
-                }
-                else
-                {
-                    std::cerr << "Key does not exist !" << std::endl;
-                }
+                std::cout << "=========" << std::endl;
+                std::cout << "Identity: " << node->identity << std::endl;
+                std::cout << "Password: " << node->password << std::endl;
+                std::cout << "More: " << node->more << std::endl;
             }
             else
             {
-                std::cerr << "Unlock failed !" << std::endl;
+                std::cerr << "Key does not exist !" << std::endl;
             }
-            return false;
         }
-    }
-    catch(std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return false;
-    }
-    catch(...) {
-        std::cerr << "Unknown exception!" << std::endl;
-        return false;
+        else
+        {
+            std::cerr << "Unlock failed !" << std::endl;
+        }
+        return;
     }
 
+    setlocale(LC_ALL, "");
     initscr();
     raw();
     noecho();
     keypad(stdscr, TRUE);
     start_color();
 
-    signal(SIGWINCH, &Passtis::OnResizeEvent);
+    signal(SIGWINCH, &onResizeEvent);
 
-    _unlockWindow = std::make_unique<UnlockWindow>();
-    _unlockWindow->setDatabase(_database);
-    _unlockWindow->update();
-
+    _unlockWindow  = std::make_unique<UnlockWindow>(filename);
     _displayWindow = std::make_unique<DisplayWindow>();
-    _newWindow = std::make_unique<NewWindow>();
-    _editWindow = std::make_unique<EditWindow>();
-    _removeWindow = std::make_unique<RemoveWindow>();
-    _moveWindow = std::make_unique<MoveWindow>();
-    _quitWindow = std::make_unique<QuitWindow>();
+    _newWindow     = std::make_unique<NewWindow>();
+    _editWindow    = std::make_unique<EditWindow>();
+    _removeWindow  = std::make_unique<RemoveWindow>();
+    _moveWindow    = std::make_unique<MoveWindow>();
+    _quitWindow    = std::make_unique<QuitWindow>();
 
-    _currentWindow = _unlockWindow.get();
+    _currentWindow = _unlockWindow;
 
-    _initialized = true;
-
-    return true;
+    _run = true;
 }
 
 int Passtis::exec()
 {
-    if(!_initialized)
-        return 1;
+    if (_currentWindow)
+        _currentWindow->update();
 
-    while(1)
+    while (_run)
     {
         int ch = getch();
+        spdlog::get("filelogger")->debug("getch: {} {} {}", ch, (char)ch, std::string(keyname(ch)));
 
         WindowAction wa = _currentWindow->onKeyEvent(ch);
+        spdlog::get("filelogger")->debug("WindowAction.type {}", wa.type);
 
-        if(wa.type == WindowAction::GoToDisplayWindow)
+        switch (wa.type)
         {
-            clear();
-            _currentWindow = _displayWindow.get();
-            _displayWindow->setDatabase(_database);
-            if(wa.data != "")
-                _displayWindow->setRoute(wa.data);
-            _displayWindow->update();
-        }
-
-        if(wa.type == WindowAction::GoToNewWindow)
-        {
-            clear();
-            _currentWindow = _newWindow.get();
-            _newWindow->setDatabase(_database);
-            _newWindow->setRoute(wa.data);
-            _newWindow->update();
-        }
-
-        if(wa.type == WindowAction::GoToEditWindow)
-        {
-            clear();
-            _currentWindow = _editWindow.get();
-            _editWindow->setDatabase(_database);
-            _editWindow->setRoute(wa.data);
-            _editWindow->update();
-        }
-
-        if(wa.type == WindowAction::GoToRemoveWindow)
-        {
-            clear();
-            _currentWindow = _removeWindow.get();
-            _removeWindow->setDatabase(_database);
-            _removeWindow->setRoute(wa.data);
-            _removeWindow->update();
-        }
-
-        if(wa.type == WindowAction::GoToMoveWindow)
-        {
-            clear();
-            _currentWindow = _moveWindow.get();
-            _moveWindow->setDatabase(_database);
-            _moveWindow->setRoute(wa.data);
-            _moveWindow->update();
-        }
-
-        if(wa.type == WindowAction::GoToQuitWindow)
-        {
-            clear();
-            _currentWindow = _quitWindow.get();
-            _quitWindow->setDatabase(_database);
-            _quitWindow->update();
-        }
-
-        if(wa.type == WindowAction::Quit)
-        {
+        case WindowAction::GoToDisplayWindow:
+            _currentWindow = _displayWindow;
             break;
+        case WindowAction::GoToNewWindow:
+            _currentWindow = _newWindow;
+            break;
+        case WindowAction::GoToEditWindow:
+            _currentWindow = _editWindow;
+            break;
+        case WindowAction::GoToRemoveWindow:
+            _currentWindow = _removeWindow;
+            break;
+        case WindowAction::GoToMoveWindow:
+            _currentWindow = _moveWindow;
+            break;
+        case WindowAction::GoToQuitWindow:
+            _currentWindow = _quitWindow;
+            break;
+        case WindowAction::Nothing:
+            break;
+        default:
+            return 0;
+        }
+
+        if (wa.type != WindowAction::Nothing)
+        {
+            spdlog::get("filelogger")->debug("clear");
+            clear();
+
+            if (wa.data != "")
+            {
+                if (auto raw = dynamic_cast<RouteAwareWindow*>(_currentWindow.get()))
+                    raw->setRoute(wa.data);
+            }
+
+            spdlog::get("filelogger")->debug("update");
+            _currentWindow->update();
         }
     }
 
     return 0;
-}
-
-bool Passtis::Init(int argc, char* argv[])
-{
-    return Instance()->init(argc, argv);
-}
-
-int Passtis::Exec()
-{
-    return Instance()->exec();
 }

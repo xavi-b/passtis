@@ -13,19 +13,19 @@ class DisplayWindow : public RouteAwareWindow
 private:
     struct MenuItem
     {
-        std::string name = "ITEM";
-        bool isGroup = false;
-        std::string pos = "0";
+        std::string name    = "ITEM";
+        bool        isGroup = false;
+        std::string pos     = "0";
     };
 
-    WINDOW* _ncTitleWin;
-    WINDOW* _ncMenuWin;
-    WINDOW* _ncSubMenuWin;
-    WINDOW* _ncPanelWin;
-    std::vector<ITEM*> _ncMenuItems;
+    WINDOW*               _ncTitleWin;
+    WINDOW*               _ncMenuWin;
+    WINDOW*               _ncSubMenuWin;
+    WINDOW*               _ncPanelWin;
+    std::vector<ITEM*>    _ncMenuItems;
     std::vector<MenuItem> _menuItems;
-    MENU* _ncMenu;
-    bool _toggle;
+    MENU*                 _ncMenu;
+    bool                  _toggle;
 
 protected:
     virtual void clean();
@@ -44,7 +44,7 @@ public:
     ~DisplayWindow();
 
     virtual WindowAction onKeyEvent(int ch);
-    virtual void update();
+    virtual void         update();
 };
 
 #endif // DISPLAYWINDOW_H
